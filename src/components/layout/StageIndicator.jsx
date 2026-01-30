@@ -39,12 +39,12 @@ const StageIndicator = ({ currentStage, stageData = {} }) => {
                 <div className="flex flex-col items-center flex-1">
                   <div className={`
                     w-28 h-28 rounded-lg border-2 flex flex-col items-center justify-center
-                    transition-all
+                    transition-all duration-300
                     ${isNavigable ? 'cursor-pointer' : 'cursor-not-allowed opacity-75'}
                     ${isActive ? 'border-red-600 bg-red-50' : ''}
                     ${isPassed ? 'border-green-500 bg-green-50' : ''}
                     ${!isActive && !isPassed ? 'border-gray-300 bg-white' : ''}
-                    ${isNavigable && !isActive ? 'hover:border-gray-400' : ''}
+                    ${isNavigable ? 'hover:scale-110 hover:shadow-lg' : ''}
                   `}>
                     <div className="mb-2">
                       {isPassed ? (
