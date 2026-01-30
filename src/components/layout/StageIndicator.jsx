@@ -3,11 +3,13 @@ import React from 'react';
 import { Check, Circle } from 'lucide-react';
 
 const stages = [
-  { id: 'discover', name: 'Discover', order: 1 },
-  { id: 'define', name: 'Define', order: 2 },
-  { id: 'design', name: 'Design', order: 3 },
-  { id: 'build', name: 'Build', order: 4 },
-  { id: 'deliver', name: 'Deliver', order: 5 }
+  { id: 'discover', name: 'Discover', order: 1, navigable: true },
+  { id: 'define', name: 'Define', order: 2, navigable: true },
+  { id: 'design', name: 'Design', order: 3, navigable: true },
+  { id: 'develop', name: 'Develop', order: 4, navigable: true },
+  { id: 'build', name: 'Build', order: 5, navigable: false },
+  { id: 'testing', name: 'Testing (UAT)', order: 6, navigable: false },
+  { id: 'delivery', name: 'Delivery', order: 7, navigable: false }
 ];
 
 const StageIndicator = ({ currentStage, stageData = {} }) => {
@@ -30,28 +32,31 @@ const StageIndicator = ({ currentStage, stageData = {} }) => {
             const isActive = currentStage === stage.id;
             const isPassed = status === 'passed';
             const itemCount = getStageItemCount(stage.id);
+            const isNavigable = stage.navigable;
             
             return (
               <React.Fragment key={stage.id}>
                 <div className="flex flex-col items-center flex-1">
                   <div className={`
-                    w-32 h-32 rounded-lg border-2 flex flex-col items-center justify-center
-                    transition-all cursor-pointer
+                    w-28 h-28 rounded-lg border-2 flex flex-col items-center justify-center
+                    transition-all
+                    ${isNavigable ? 'cursor-pointer' : 'cursor-not-allowed opacity-75'}
                     ${isActive ? 'border-red-600 bg-red-50' : ''}
                     ${isPassed ? 'border-green-500 bg-green-50' : ''}
-                    ${!isActive && !isPassed ? 'border-gray-300 bg-white hover:border-gray-400' : ''}
+                    ${!isActive && !isPassed ? 'border-gray-300 bg-white' : ''}
+                    ${isNavigable && !isActive ? 'hover:border-gray-400' : ''}
                   `}>
                     <div className="mb-2">
                       {isPassed ? (
-                        <Check className="w-6 h-6 text-green-600" />
+                        <Check className="w-4 h-4 text-green-600" />
                       ) : isActive ? (
-                        <Circle className="w-6 h-6 text-red-600 fill-red-600" />
+                        <Circle className="w-4 h-4 text-red-600 fill-red-600" />
                       ) : (
-                        <Circle className="w-6 h-6 text-gray-400" />
+                        <Circle className="w-4 h-4 text-gray-400" />
                       )}
                     </div>
                     <div className={`
-                      text-sm font-semibold uppercase tracking-wide
+                      text-xs font-semibold uppercase tracking-wide text-center
                       ${isActive ? 'text-red-600' : ''}
                       ${isPassed ? 'text-green-600' : ''}
                       ${!isActive && !isPassed ? 'text-gray-600' : ''}
@@ -65,7 +70,7 @@ const StageIndicator = ({ currentStage, stageData = {} }) => {
                 </div>
                 
                 {index < stages.length - 1 && (
-                  <div className="flex-shrink-0 w-12 flex items-center justify-center mb-12">
+                  <div className="flex-shrink-0 w-8 flex items-center justify-center mb-12">
                     <div className={`
                       h-0.5 w-full
                       ${isPassed ? 'bg-green-500' : 'bg-gray-300'}
