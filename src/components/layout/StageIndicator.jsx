@@ -13,13 +13,11 @@ export const stages = [
   { id: 'delivery', name: 'Delivery', order: 7 }
 ];
 
-// Helper function to get stage order
 export const getStageOrder = (stageId) => {
   const stage = stages.find(s => s.id === stageId);
   return stage ? stage.order : 0;
 };
 
-// Helper function to check if a stage is accessible (at or before current stage)
 export const isStageAccessible = (stageId, currentStageId) => {
   return getStageOrder(stageId) <= getStageOrder(currentStageId);
 };
@@ -40,10 +38,7 @@ const StageIndicator = ({
     return stageData[stageId]?.itemCount || 0;
   };
 
-  const currentStageOrder = getStageOrder(currentStage);
-
   const handleStageClick = (stage) => {
-    // Only allow clicking on stages at or before the current stage
     if (isStageAccessible(stage.id, currentStage) && onStageClick) {
       onStageClick(stage.id);
     }
@@ -60,7 +55,6 @@ const StageIndicator = ({
             const isPassed = status === 'passed';
             const itemCount = getStageItemCount(stage.id);
             const isAccessible = isStageAccessible(stage.id, currentStage);
-            const stageOrder = getStageOrder(stage.id);
             
             return (
               <React.Fragment key={stage.id}>

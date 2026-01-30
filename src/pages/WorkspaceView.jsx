@@ -7,10 +7,10 @@ import Sidebar from '../components/layout/Sidebar';
 import EditorPanel from '../components/workspace/EditorPanel';
 import TeamChat from '../components/workspace/TeamChat';
 import AISpecialist from '../components/workspace/AISpecialist';
-import OnlineUsers from '../components/workspace/OnlineUsers';
 import WorkspaceTabs from '../components/workspace/WorkspaceTabs';
 import StageGateTab from '../components/workspace/StageGateTab';
 import HistoryTab from '../components/workspace/HistoryTab';
+import OnlineUsers from '../components/workspace/OnlineUsers';
 
 const WorkspaceView = () => {
   const { projectId } = useParams();
@@ -78,11 +78,11 @@ const WorkspaceView = () => {
   ]);
 
   const onlineUsers = [
-    { id: 1, name: 'Siva', initials: 'S', color: 'bg-red-600' },
-    { id: 2, name: 'Priya', initials: 'P', color: 'bg-purple-600' },
-    { id: 3, name: 'Raj', initials: 'R', color: 'bg-blue-600' },
-    { id: 4, name: 'Maya', initials: 'M', color: 'bg-green-600' },
-    { id: 5, name: 'Amit', initials: 'A', color: 'bg-orange-600' }
+    { id: 1, name: 'Siva', initials: 'S', color: 'bg-red-600', online: true },
+    { id: 2, name: 'Priya', initials: 'P', color: 'bg-purple-600', online: true },
+    { id: 3, name: 'Raj', initials: 'R', color: 'bg-blue-600', online: true },
+    { id: 4, name: 'Maya', initials: 'M', color: 'bg-green-600', online: true },
+    { id: 5, name: 'Amit', initials: 'A', color: 'bg-orange-600', online: true }
   ];
 
   const specialistByStage = {
@@ -389,7 +389,7 @@ const WorkspaceView = () => {
     }
   };
 
-  return (
+ return (
     <div className="h-screen flex flex-col bg-gray-50">
       <Header projectName="Legal Request Intake App" onShareClick={() => {}} />
       <StageIndicator 
@@ -404,6 +404,5 @@ const WorkspaceView = () => {
       <TeamChat messages={chatMessages} onSendMessage={handleSendMessage} />
     </div>
   );
-};
 
 export default WorkspaceView;
