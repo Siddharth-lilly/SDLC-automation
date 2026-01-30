@@ -1,29 +1,33 @@
 // src/components/workspace/AISpecialist.jsx
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Bot, Sparkles, ChevronLeft, ChevronRight, GripVertical, Send } from 'lucide-react';
+import { Bot, Sparkles, ChevronLeft, ChevronRight, GripVertical, Send, User } from 'lucide-react';
 
-const AISpecialist = ({ specialist, onAskAI }) => {
+const AISpecialist = ({ specialist, onAskAI, conversation = [] }) => {
   const [isExpanded, setIsExpanded] = useState(true);
-  const [width, setWidth] = useState(280); // Default width in pixels
+  const [width, setWidth] = useState(320);
   const [isResizing, setIsResizing] = useState(false);
   const [aiQuestion, setAiQuestion] = useState('');
   const panelRef = useRef(null);
+  const messagesEndRef = useRef(null);
   
-  // Min and max width constraints
-  const MIN_WIDTH = 200;
+  const MIN_WIDTH = 280;
   const MAX_WIDTH = 500;
   const COLLAPSED_WIDTH = 48;
 
-  // Handle mouse down on resize handle
+  // ✅ Auto-scroll to bottom when conversation updates
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [conversation]);
+
   const handleMouseDown = useCallback((e) => {
     e.preventDefault();
     setIsResizing(true);
   }, []);
 
-  // Handle mouse move during resize
   const handleMouseMove = useCallback((e) => {
     if (!isResizing) return;
-    
     const newWidth = e.clientX;
     if (newWidth >= MIN_WIDTH && newWidth <= MAX_WIDTH) {
       setWidth(newWidth);
@@ -34,12 +38,10 @@ const AISpecialist = ({ specialist, onAskAI }) => {
     }
   }, [isResizing]);
 
-  // Handle mouse up to stop resizing
   const handleMouseUp = useCallback(() => {
     setIsResizing(false);
   }, []);
 
-  // Add and remove event listeners for resize
   useEffect(() => {
     if (isResizing) {
       document.addEventListener('mousemove', handleMouseMove);
@@ -52,7 +54,6 @@ const AISpecialist = ({ specialist, onAskAI }) => {
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
     }
-
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
@@ -65,6 +66,13 @@ const AISpecialist = ({ specialist, onAskAI }) => {
     if (aiQuestion.trim() && onAskAI) {
       onAskAI(aiQuestion);
       setAiQuestion('');
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleAskAI();
     }
   };
 
@@ -82,61 +90,35 @@ const AISpecialist = ({ specialist, onAskAI }) => {
         maxWidth: isExpanded ? `${MAX_WIDTH}px` : `${COLLAPSED_WIDTH}px`
       }}
     >
-      {/* Toggle Button */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="absolute -right-3 top-6 w-6 h-6 bg-cyan-600 rounded-full flex items-center justify-center text-white hover:bg-cyan-700 transition-colors z-20 shadow-md"
-      >
-        {isExpanded ? (
-          <ChevronLeft className="w-4 h-4" />
-        ) : (
-          <ChevronRight className="w-4 h-4" />
-        )}
-      </button>
-
-      {/* Resize Handle - Only visible when expanded */}
+      {/* Resize Handle */}
       {isExpanded && (
         <div
           onMouseDown={handleMouseDown}
-          className={`
-            absolute right-0 top-0 bottom-0 w-1 cursor-col-resize z-10
-            hover:bg-cyan-400 transition-colors group
-            ${isResizing ? 'bg-cyan-500' : 'bg-transparent hover:bg-cyan-300'}
-          `}
+          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-cyan-400 transition-colors z-10 group"
         >
-          {/* Grip indicator */}
-          <div className={`
-            absolute top-1/2 -translate-y-1/2 -right-1 
-            flex items-center justify-center w-3 h-8 
-            rounded bg-gray-200 opacity-0 group-hover:opacity-100 transition-opacity
-            ${isResizing ? 'opacity-100 bg-cyan-400' : ''}
-          `}>
-            <GripVertical className="w-3 h-3 text-gray-500" />
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <GripVertical className="w-3 h-3 text-gray-400" />
           </div>
         </div>
       )}
 
+      {/* Toggle Button */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="absolute -right-3 top-4 z-20 w-6 h-6 bg-white border border-gray-200 rounded-full shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors"
+      >
+        {isExpanded ? <ChevronLeft className="w-4 h-4 text-gray-600" /> : <ChevronRight className="w-4 h-4 text-gray-600" />}
+      </button>
+
       {/* Collapsed State */}
       {!isExpanded && (
-        <div className="flex flex-col items-center py-4 space-y-3 w-full overflow-hidden">
-          <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-cyan-700 rounded-full flex items-center justify-center shadow-md">
+        <div className="flex flex-col items-center py-4 space-y-4">
+          <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-cyan-700 rounded-full flex items-center justify-center shadow-lg">
             <Bot className="w-5 h-5 text-white" />
           </div>
-          {/* Vertical text using inline style */}
-          <div 
-            className="text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
-            style={{ 
-              writingMode: 'vertical-rl',
-              textOrientation: 'mixed',
-              transform: 'rotate(180deg)',
-              maxHeight: '100px'
-            }}
-          >
-            AI
-          </div>
-          <div className="w-6 h-6 rounded-full bg-cyan-100 flex items-center justify-center">
-            <Sparkles className="w-3 h-3 text-cyan-600" />
-          </div>
+          <span className="text-xs font-medium text-gray-600 writing-mode-vertical" style={{ writingMode: 'vertical-rl' }}>
+            AI Specialist
+          </span>
         </div>
       )}
 
@@ -144,79 +126,104 @@ const AISpecialist = ({ specialist, onAskAI }) => {
       {isExpanded && (
         <div className="flex flex-col h-full overflow-hidden">
           {/* Header Section */}
-          <div className="p-4 flex-shrink-0">
-            <div className="text-center mb-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-cyan-700 rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg">
-                <Bot className="w-8 h-8 text-white" />
+          <div className="p-4 flex-shrink-0 border-b border-gray-200">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-cyan-700 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
+                <Bot className="w-6 h-6 text-white" />
               </div>
-              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                AI Specialist
-              </div>
-              <h3 className="text-lg font-bold text-gray-900">{specialist.name}</h3>
-              <p className="text-sm text-gray-600 mt-1">{specialist.experience}</p>
-            </div>
-
-            {/* Description Card */}
-            <div className="p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
-              <p className="text-xs text-gray-600 leading-relaxed">
-                {specialist.description}
-              </p>
-            </div>
-
-            <button className="mt-3 w-full text-sm text-cyan-700 font-medium hover:text-cyan-800 transition-colors flex items-center justify-center gap-1">
-              <span>Switch Specialist</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Divider */}
-          <div className="px-4">
-            <div className="border-t border-gray-200" />
-          </div>
-
-          {/* Chat/Ask AI Section - Flexible height */}
-          <div className="flex-1 flex flex-col p-4 overflow-hidden">
-            <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-cyan-600" />
-              Ask AI
-            </h4>
-            
-            {/* Response Area */}
-            <div className="flex-1 bg-white border border-gray-200 rounded-lg p-3 mb-3 overflow-y-auto">
-              <p className="text-sm text-gray-500 italic">
-                Ask me anything about {specialist.name.toLowerCase()} topics. I can help with architecture decisions, best practices, and technical recommendations.
-              </p>
-            </div>
-
-            {/* Input Area */}
-            <div className="flex-shrink-0">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={aiQuestion}
-                  onChange={(e) => setAiQuestion(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleAskAI()}
-                  placeholder="Type your question..."
-                  className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                />
-                <button
-                  onClick={handleAskAI}
-                  disabled={!aiQuestion.trim()}
-                  className={`
-                    px-3 py-2 rounded-lg transition-colors flex items-center justify-center
-                    ${aiQuestion.trim() 
-                      ? 'bg-cyan-600 text-white hover:bg-cyan-700' 
-                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    }
-                  `}
-                >
-                  <Send className="w-4 h-4" />
-                </button>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  AI Specialist
+                </div>
+                <h3 className="text-base font-bold text-gray-900 truncate">{specialist.name}</h3>
+                <p className="text-xs text-gray-500 truncate">{specialist.experience}</p>
               </div>
             </div>
           </div>
 
-          {/* Width indicator during resize */}
+          {/* ✅ Conversation Area - Now displays actual messages */}
+          <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-gray-50/50">
+            {conversation.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-center p-4">
+                <Sparkles className="w-8 h-8 text-cyan-400 mb-3" />
+                <p className="text-sm text-gray-500 leading-relaxed">
+                  {specialist.description}
+                </p>
+                <p className="text-xs text-gray-400 mt-3">
+                  Ask me anything about {specialist.name.toLowerCase()} topics!
+                </p>
+              </div>
+            ) : (
+              <>
+                {conversation.map((msg) => (
+                  <div 
+                    key={msg.id} 
+                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`flex gap-2 max-w-[90%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                      {/* Avatar */}
+                      <div className={`
+                        w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0
+                        ${msg.role === 'user' 
+                          ? 'bg-gray-600' 
+                          : 'bg-gradient-to-br from-cyan-500 to-cyan-700'
+                        }
+                      `}>
+                        {msg.role === 'user' 
+                          ? <User className="w-4 h-4 text-white" />
+                          : <Bot className="w-4 h-4 text-white" />
+                        }
+                      </div>
+                      
+                      {/* Message Bubble */}
+                      <div className={`
+                        p-3 rounded-2xl text-sm
+                        ${msg.role === 'user'
+                          ? 'bg-gray-600 text-white rounded-tr-sm'
+                          : 'bg-white border border-cyan-100 text-gray-700 rounded-tl-sm shadow-sm'
+                        }
+                      `}>
+                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                        <span className={`text-xs mt-1 block ${msg.role === 'user' ? 'text-gray-300' : 'text-gray-400'}`}>
+                          {msg.time}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <div ref={messagesEndRef} />
+              </>
+            )}
+          </div>
+
+          {/* Input Area */}
+          <div className="p-3 border-t border-gray-200 bg-white flex-shrink-0">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={aiQuestion}
+                onChange={(e) => setAiQuestion(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={`Ask ${specialist.name}...`}
+                className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              />
+              <button
+                onClick={handleAskAI}
+                disabled={!aiQuestion.trim()}
+                className={`
+                  w-9 h-9 rounded-full transition-colors flex items-center justify-center flex-shrink-0
+                  ${aiQuestion.trim() 
+                    ? 'bg-cyan-600 text-white hover:bg-cyan-700' 
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  }
+                `}
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Resize Indicator */}
           {isResizing && (
             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded">
               {width}px

@@ -18,13 +18,13 @@ const WorkspaceView = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileContent, setFileContent] = useState('');
   
-  // ✅ NEW: Current stage (the actual project progress)
   const currentStage = 'design';
-  
-  // ✅ NEW: Viewing stage (which stage's files are being viewed)
   const [viewingStage, setViewingStage] = useState(currentStage);
 
-  // Mock data for project files - includes all stages
+  // ✅ NEW: Separate state for AI Specialist conversation
+  const [aiConversation, setAiConversation] = useState([]);
+
+  // Mock data for project files
   const projectFiles = [
     {
       id: 'discover',
@@ -64,27 +64,12 @@ const WorkspaceView = () => {
         { id: 'db-schema', name: 'Database Schema.md', modified: false, lastEditedBy: null, lastEditedTime: null }
       ]
     },
-    {
-      id: 'build',
-      name: 'Build',
-      gateStatus: 'pending',
-      files: []
-    },
-    {
-      id: 'testing',
-      name: 'Testing',
-      gateStatus: 'pending',
-      files: []
-    },
-    {
-      id: 'delivery',
-      name: 'Delivery',
-      gateStatus: 'pending',
-      files: []
-    }
+    { id: 'build', name: 'Build', gateStatus: 'pending', files: [] },
+    { id: 'testing', name: 'Testing', gateStatus: 'pending', files: [] },
+    { id: 'delivery', name: 'Delivery', gateStatus: 'pending', files: [] }
   ];
 
-  // Mock data for chat messages
+  // Mock data for chat messages (Team Chat - separate from AI conversation)
   const [chatMessages, setChatMessages] = useState([
     { id: 1, author: 'Priya', content: 'Updated the diagram to show async queue for SAP integration', time: '2h ago', isAI: false },
     { id: 2, author: 'Siva', content: 'Looks good. What about the cache layer?', time: '1h ago', isAI: false },
@@ -92,7 +77,6 @@ const WorkspaceView = () => {
     { id: 4, author: 'Raj', content: '+1, we used that on PPS project', time: '45m ago', isAI: false }
   ]);
 
-  // Mock data for online users
   const onlineUsers = [
     { id: 1, name: 'Siva', initials: 'S', color: 'bg-red-600' },
     { id: 2, name: 'Priya', initials: 'P', color: 'bg-purple-600' },
@@ -101,48 +85,18 @@ const WorkspaceView = () => {
     { id: 5, name: 'Amit', initials: 'A', color: 'bg-orange-600' }
   ];
 
-  // Mock data for AI specialist - changes based on viewing stage
   const specialistByStage = {
-    discover: {
-      name: 'Business Analyst',
-      experience: '10+ years requirements gathering',
-      description: 'I can help you understand stakeholder needs, document current state, and identify pain points.'
-    },
-    define: {
-      name: 'Technical Writer',
-      experience: '12+ years documentation',
-      description: 'I can help you create BRDs, user stories, and requirements traceability matrices.'
-    },
-    design: {
-      name: 'Solution Architect',
-      experience: '15+ years enterprise experience',
-      description: 'I can help you design scalable architectures, choose the right technologies, and create technical documentation.'
-    },
-    develop: {
-      name: 'Senior Developer',
-      experience: '10+ years full-stack development',
-      description: 'I can help you write clean code, implement best practices, and review technical implementations.'
-    },
-    build: {
-      name: 'DevOps Engineer',
-      experience: '8+ years CI/CD pipelines',
-      description: 'I can help you set up build pipelines, deployments, and infrastructure as code.'
-    },
-    testing: {
-      name: 'QA Lead',
-      experience: '10+ years testing',
-      description: 'I can help you create test plans, write test cases, and ensure quality standards.'
-    },
-    delivery: {
-      name: 'Release Manager',
-      experience: '8+ years release management',
-      description: 'I can help you plan releases, coordinate deployments, and manage go-live activities.'
-    }
+    discover: { name: 'Business Analyst', experience: '10+ years requirements gathering', description: 'I can help you understand stakeholder needs, document current state, and identify pain points.' },
+    define: { name: 'Technical Writer', experience: '12+ years documentation', description: 'I can help you create BRDs, user stories, and requirements traceability matrices.' },
+    design: { name: 'Solution Architect', experience: '15+ years enterprise experience', description: 'I can help you design scalable architectures, choose the right technologies, and create technical documentation.' },
+    develop: { name: 'Senior Developer', experience: '10+ years full-stack development', description: 'I can help you write clean code, implement best practices, and review technical implementations.' },
+    build: { name: 'DevOps Engineer', experience: '8+ years CI/CD', description: 'I can help you set up pipelines, containerization, and deployment strategies.' },
+    testing: { name: 'QA Lead', experience: '10+ years testing', description: 'I can help you create test plans, write test cases, and ensure quality standards.' },
+    delivery: { name: 'Release Manager', experience: '8+ years release management', description: 'I can help you plan releases, coordinate deployments, and manage go-live activities.' }
   };
 
   const specialist = specialistByStage[viewingStage] || specialistByStage.design;
 
-  // Mock data for stage indicator
   const stageData = {
     discover: { status: 'passed', itemCount: 12 },
     define: { status: 'passed', itemCount: 8 },
@@ -153,7 +107,7 @@ const WorkspaceView = () => {
     delivery: { status: 'pending', itemCount: 0 }
   };
 
-  // Mock data for Stage Gate - different data for each stage
+  // ✅ RESTORED: Full mock data for Stage Gate
   const gateDataByStage = {
     discover: {
       currentStage: 'discover',
@@ -303,7 +257,7 @@ const WorkspaceView = () => {
   // Get gate data for the currently viewing stage
   const gateData = gateDataByStage[viewingStage] || gateDataByStage.design;
 
-  // Mock data for History
+  // ✅ RESTORED: Full mock data for History
   const commitHistory = [
     {
       id: 'c8f2a1b',
@@ -347,33 +301,19 @@ const WorkspaceView = () => {
     }
   ];
 
-  // Helper function to get next stage
-  function getNextStage(stage) {
-    const stageOrder = ['discover', 'define', 'design', 'develop', 'build', 'testing', 'delivery'];
-    const currentIndex = stageOrder.indexOf(stage);
-    return currentIndex < stageOrder.length - 1 ? stageOrder[currentIndex + 1] : stage;
-  }
-
-  // ✅ NEW: Handle stage click from StageIndicator
   const handleStageClick = (stageId) => {
     setViewingStage(stageId);
-    setSelectedFile(null); // Clear selected file when changing stages
+    setSelectedFile(null);
     setFileContent('');
+    // ✅ Clear AI conversation when switching stages
+    setAiConversation([]);
   };
 
-  // Handler functions
-  const handleApprove = (comment) => {
-    console.log('Approved with comment:', comment);
-  };
+  const handleApprove = (comment) => console.log('Approved:', comment);
+  const handleReject = (comment) => console.log('Rejected:', comment);
+  const handleRollback = (commit) => console.log('Rollback:', commit.id);
 
-  const handleReject = (comment) => {
-    console.log('Rejected with comment:', comment);
-  };
-
-  const handleRollback = (commit) => {
-    console.log('Rolling back to commit:', commit.id);
-  };
-
+  // Team Chat message handler (unchanged)
   const handleSendMessage = (message) => {
     const newMsg = {
       id: chatMessages.length + 1,
@@ -385,52 +325,49 @@ const WorkspaceView = () => {
     setChatMessages([...chatMessages, newMsg]);
   };
 
+  // ✅ FIXED: AI Specialist handler - now updates aiConversation, not chatMessages
   const handleAskAI = (question) => {
-    console.log('AI Question:', question);
-    // Add AI response to chat
-    const aiResponse = {
-      id: chatMessages.length + 1,
-      author: 'AI',
-      content: `Based on your question about "${question}", here's my recommendation for the ${viewingStage} stage...`,
-      time: 'Just now',
-      isAI: true
+    const userMsg = {
+      id: Date.now(),
+      role: 'user',
+      content: question,
+      time: 'Just now'
     };
-    setChatMessages([...chatMessages, aiResponse]);
+
+    const aiResponse = {
+      id: Date.now() + 1,
+      role: 'assistant',
+      content: `Based on your question about "${question}", here's my recommendation as ${specialist.name}:\n\nFor the ${viewingStage} stage, I would suggest considering the following approach...`,
+      time: 'Just now'
+    };
+
+    setAiConversation(prev => [...prev, userMsg, aiResponse]);
   };
 
-  // Function to render content based on active tab
   const renderTabContent = () => {
     switch (activeTab) {
       case 'stagegate':
         return (
           <div className="flex-1 overflow-y-auto bg-gray-50">
-            <StageGateTab 
-              gateData={gateData}
-              onApprove={handleApprove}
-              onReject={handleReject}
-            />
+            <StageGateTab gateData={gateData} onApprove={handleApprove} onReject={handleReject} />
           </div>
         );
-      
       case 'history':
         return (
           <div className="flex-1 overflow-y-auto bg-gray-50">
-            <HistoryTab 
-              commits={commitHistory}
-              onRollback={handleRollback}
-            />
+            <HistoryTab commits={commitHistory} onRollback={handleRollback} />
           </div>
         );
-      
       case 'workspace':
       default:
         return (
           <div className="flex-1 flex overflow-hidden">
+            {/* ✅ Pass conversation prop to AISpecialist */}
             <AISpecialist 
               specialist={specialist} 
-              onAskAI={handleAskAI} 
+              onAskAI={handleAskAI}
+              conversation={aiConversation}
             />
-            
             <Sidebar 
               projectFiles={projectFiles} 
               onFileSelect={(file) => {
@@ -441,7 +378,6 @@ const WorkspaceView = () => {
               viewingStage={viewingStage}
               currentStage={currentStage}
             />
-            
             <EditorPanel 
               file={selectedFile}
               content={fileContent}
@@ -456,25 +392,16 @@ const WorkspaceView = () => {
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       <Header projectName="Legal Request Intake App" onShareClick={() => {}} />
-      
-      {/* ✅ UPDATED: Pass viewingStage and onStageClick */}
       <StageIndicator 
         currentStage={currentStage} 
         viewingStage={viewingStage}
         stageData={stageData}
         onStageClick={handleStageClick}
       />
-      
       <OnlineUsers users={onlineUsers} count={5} />
-      
       <WorkspaceTabs activeTab={activeTab} onTabChange={setActiveTab} />
-      
       {renderTabContent()}
-
-      <TeamChat 
-        messages={chatMessages}
-        onSendMessage={handleSendMessage}
-      />
+      <TeamChat messages={chatMessages} onSendMessage={handleSendMessage} />
     </div>
   );
 };
